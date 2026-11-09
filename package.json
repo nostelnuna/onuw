@@ -1,0 +1,13 @@
+{
+  "name": "one-night-werewolf-35",
+  "version": "1.0.0",
+  "description": "5~35인 한밤의 늑대인간 웹게임 (단판 승부 & 카드 교환 실시간 정산)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.7.4"
+  }
+}
