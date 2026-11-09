@@ -33,9 +33,9 @@ const ROLES = {
   MODERATOR: { name: '진행 사회자', team: 'SPECTATOR', icon: '🎙️', desc: '게임에 직접 참여하지 않고 전체 진행 및 관전을 총괄합니다.' }
 };
 
-// 5~35인 황금 직업 밸런스 공식 (항상 플레이어 수 + 3장의 카드 생성)
+// 3~35인 황금 직업 밸런스 공식 (항상 플레이어 수 + 3장의 카드 생성)
 function getAutoRoleDeck(total) {
-  total = Math.max(5, Math.min(35, total));
+  total = Math.max(3, Math.min(35, total));
   const totalCards = total + 3; // 중앙 카드 3장 필수
   
   let werewolf = 2;
@@ -49,8 +49,15 @@ function getAutoRoleDeck(total) {
   let hunter = 0;
   let tanner = 0;
 
-  if (total <= 6) {
-    werewolf = 2; minion = 0; mason = 0; hunter = 0; tanner = 0;
+  if (total === 3) {
+    // 3인 공식 룰 (카드 6장): 늑대 2, 예언자 1, 강도 1, 말썽쟁이 1, 주민 1
+    werewolf = 2; minion = 0; mason = 0; seer = 1; robber = 1; troublemaker = 1; drunk = 0; insomniac = 0; hunter = 0; tanner = 0;
+  } else if (total === 4) {
+    // 4인 공식 룰 (카드 7장): 늑대 2, 예언자 1, 강도 1, 말썽쟁이 1, 주정뱅이 1, 불면증 1, 주민 0
+    werewolf = 2; minion = 0; mason = 0; seer = 1; robber = 1; troublemaker = 1; drunk = 1; insomniac = 1; hunter = 0; tanner = 0;
+  } else if (total <= 6) {
+    // 5~6인 (카드 8~9장): 늑대 2, 예언자 1, 강도 1, 말썽쟁이 1, 주정뱅이 1, 불면증 1, 주민 1~2
+    werewolf = 2; minion = 0; mason = 0; seer = 1; robber = 1; troublemaker = 1; drunk = 1; insomniac = 1; hunter = 0; tanner = 0;
   } else if (total <= 8) {
     werewolf = 2; minion = 1; mason = 2; hunter = 0; tanner = 0;
   } else if (total <= 12) {
@@ -84,7 +91,7 @@ const gameState = {
   round: 1,
   players: [], // { socketId, token, id, name, initialRole, currentRole, isHost, isModerator }
   centerCards: [], // [card0, card1, card2]
-  roleDeckConfig: getAutoRoleDeck(5),
+  roleDeckConfig: getAutoRoleDeck(3),
   timerSeconds: 0,
   timerInterval: null,
   isTimerPaused: false,
@@ -131,7 +138,7 @@ function broadcastSystemMsg(text, channel = 'all') {
 function broadcastState() {
   cleanupDeadSockets();
   const playingCount = gameState.players.filter(p => !p.isModerator).length;
-  gameState.roleDeckConfig = getAutoRoleDeck(playingCount >= 5 ? playingCount : 5);
+  gameState.roleDeckConfig = getAutoRoleDeck(playingCount >= 3 ? playingCount : 3);
 
   io.emit('state:update', {
     phase: gameState.phase,
@@ -481,8 +488,8 @@ io.on('connection', (socket) => {
     const playingPlayers = gameState.players.filter(p => !p.isModerator);
     const totalPlaying = playingPlayers.length;
 
-    if (totalPlaying < 5) {
-      socket.emit('error_message', `실제 게임 참여 인원이 ${totalPlaying}명입니다. 최소 5명 이상이어야 시작할 수 있습니다.`);
+    if (totalPlaying < 3) {
+      socket.emit('error_message', `실제 게임 참여 인원이 ${totalPlaying}명입니다. 최소 3명 이상이어야 시작할 수 있습니다.`);
       return;
     }
 
@@ -733,7 +740,7 @@ io.on('connection', (socket) => {
 
 server.listen(PORT, () => {
   console.log(`=================================================`);
-  console.log(`🐺 5~35인 한밤의 늑대인간(ONUW) 스마트 서버 실행 완료!`);
+  console.log(`🐺 3~35인 한밤의 늑대인간(ONUW) 스마트 서버 실행 완료!`);
   console.log(`접속 주소: http://localhost:${PORT}`);
   console.log(`=================================================`);
 });
